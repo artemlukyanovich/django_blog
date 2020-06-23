@@ -1,0 +1,32 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+  <h1>Blogger: {{ blogger.username }}</h1>
+
+    <h3>Bio</h3>
+    {% if user.profile.bio %}
+    <p>{{ user.profile.bio }}</p>
+    {% else %}
+    <p>No Bio</p>
+    {% endif %}
+
+{#    <a href="{% url 'book_update' book.id %}">Update</a>#}
+{#    <a class="text-danger" href="{% url 'book_delete' book.id %}">Delete</a>#}
+{##}
+  <div style="margin-top:20px">
+    {% if user.blog_set.count %}
+    <h3>Blogs list</h3>
+
+    <ul>
+    {% for blog in user.blog_set.all %}
+      <li>
+        <a href="{% url 'blog-detail' blog.id %}">{{ blog.name }}</a> ({{blog.pub_date}})
+      </li>
+    {% endfor %}
+    </ul>
+    {% else %}
+    <h4>No instances</h4>
+    {% endif %}
+  </div>
+
+{% endblock %}

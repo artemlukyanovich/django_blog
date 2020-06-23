@@ -1,0 +1,19 @@
+Создание скелета:
+django-admin startproject django_blog
+create venv
+pip install django
+python3 manage.py startapp miniblog
+main: settings, urls
+app: urls.py
+
+После создания скелета:
+python3 manage.py makemigrations
+python3 manage.py migrate
+
+Пользователи:
+python3 manage.py createsuperuser
+main: urls.py, settings (TEMPLATES['DIRS'])
+https://tproger.ru/translations/extending-django-user-model/
+
+Админка:
+pip install django-admin-list-filter-dropdown
