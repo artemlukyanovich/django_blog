@@ -22,11 +22,9 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('blog/', include('miniblog.urls')),
-    path('', RedirectView.as_view(url='/blog/', permanent=True)),
+    path('', include("accounts.urls")),
     path('accounts/', include('django.contrib.auth.urls')),
 
-    # path('miniblog/', RedirectView.as_view(url='/blog/', permanent=True)),
-    # https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Authentication
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

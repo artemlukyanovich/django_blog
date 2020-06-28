@@ -17,3 +17,8 @@ https://tproger.ru/translations/extending-django-user-model/
 
 Админка:
 pip install django-admin-list-filter-dropdown
+
+Регистрация:
+https://levelup.gitconnected.com/how-to-implement-login-logout-and-registration-with-djangos-user-model-59442164db73
+https://timline.ru/post/prostaia-registratsiia-polzovatelei-na-saite-django/
+
