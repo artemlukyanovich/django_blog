@@ -10,6 +10,5 @@ urlpatterns = [
     url(r'^bloggers/$', views.BloggerListView.as_view(), name='bloggers'),
     url(r'^blogger/(?P<pk>\d+)$', views.BloggerDetailView.as_view(), name='blogger-detail'),
     url(r'^blog/(?P<pk>\d+)/create/$', views.CommentCreate.as_view(), name='comment-create'),
-    # path('accounts/register/', views.RegisterFormView.as_view(), name="register"),
 ]
 

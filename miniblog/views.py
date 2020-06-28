@@ -1,17 +1,14 @@
 # from django.contrib.auth.models import User
 import datetime
 
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.contrib.auth.views import redirect_to_login
-from django.core.exceptions import PermissionDenied
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import F, Max, Count
 from django.db.models.functions import Coalesce
 from django.shortcuts import render, get_object_or_404
 # Create your views here.
 from django.urls import reverse
 from django.views import generic
-from django.views.generic import CreateView, FormView
+from django.views.generic import CreateView
 
 from miniblog.models import Blog, User, Comment
 
@@ -25,19 +22,6 @@ from miniblog.models import Blog, User, Comment
 
 def index(request):
     return render(request, 'index.html', )
-
-
-class RegisterFormView(FormView):
-    form_class = UserCreationForm
-    success_url = "/login/"
-    template_name = "registration/register.html"
-
-    def form_valid(self, form):
-        form.save()
-        return super(RegisterFormView, self).form_valid(form)
-
-    def form_invalid(self, form):
-        return super(RegisterFormView, self).form_invalid(form)
 
 
 class BlogListView(generic.ListView):

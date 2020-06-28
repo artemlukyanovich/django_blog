@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from django.urls import reverse
 
 
+# Надо бы переместить модель в accounts
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     bio = models.TextField(max_length=500, blank=True)
