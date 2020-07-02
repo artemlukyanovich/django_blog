@@ -38,7 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'miniblog.apps.MiniblogConfig',
+    # 'miniblog',
     'accounts.apps.AccountsConfig',
+    'django_admin_listfilter_dropdown',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [

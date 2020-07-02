@@ -33,15 +33,16 @@ class Blog(models.Model):
     pub_date = models.DateTimeField(null=True, blank=True)
     description = TextField(max_length=1000)
 
+    class Meta:
+        ordering = ['-pub_date']
+        # default_related_name = 'blogs'
+
     def __str__(self):
         return '{} ({})'.format(self.name, self.author)
 
     def last_comment_date(self):
         last_comment = self.comment_set.last()
         return last_comment.pub_date if last_comment else None
-
-    class Meta:
-        ordering = ['-pub_date']
 
     def get_absolute_url(self):
         return reverse('blog-detail', args=[self.id])

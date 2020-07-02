@@ -1,7 +1,10 @@
 # from django.contrib.auth.models import User
 import datetime
+import functools
+import time
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db import reset_queries, connection
 from django.db.models import F, Max, Count
 from django.db.models.functions import Coalesce
 from django.shortcuts import render, get_object_or_404
@@ -9,6 +12,8 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views import generic
 from django.views.generic import CreateView
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from miniblog.models import Blog, User, Comment
 
@@ -18,6 +23,27 @@ from miniblog.models import Blog, User, Comment
 #         if self.raise_exception:
 #             raise PermissionDenied(self.get_permission_denied_message())
 #         return redirect_to_login(self.request.get_full_path(), self.get_login_url(), self.get_redirect_field_name())
+
+
+def query_debugger(func):
+    @functools.wraps(func)
+    def inner_func(*args, **kwargs):
+        reset_queries()
+
+        start_queries = len(connection.queries)
+
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        end = time.perf_counter()
+
+        end_queries = len(connection.queries)
+
+        print(f"Function : {func.__name__}")
+        print(f"Number of Queries : {end_queries - start_queries}")
+        print(f"Finished in : {(end - start):.5f}s")
+        return result
+
+    return inner_func
 
 
 def index(request):
@@ -38,6 +64,7 @@ class BloggerListView(generic.ListView):
     paginate_by = 10
     template_name = 'miniblog/blogger_list.html'
 
+    @query_debugger
     def get_queryset(self):
         return User.objects.exclude(blog__isnull=True).annotate(blogs_num=Count('blog')).\
             order_by(F('blogs_num').desc(nulls_last=True), 'username')
@@ -75,3 +102,16 @@ class CommentCreate(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         return reverse('blog-detail', kwargs={'pk': self.kwargs['pk']})
+
+
+class BlogView(APIView):
+    @query_debugger
+    def get(self, request):
+        queryset = Blog.objects.select_related('author').all()
+        blogs = []
+
+        for blog in queryset:
+            blogs.append({'id': blog.id, 'name': blog.name, 'author': blog.author.username})
+
+        return Response(blogs)
+
