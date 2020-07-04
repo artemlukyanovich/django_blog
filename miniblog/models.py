@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.models import User, AbstractUser
 from django.db import models
 
@@ -15,6 +17,9 @@ class Profile(models.Model):
     location = models.CharField(max_length=30, blank=True)
     birth_date = models.DateField(null=True, blank=True)
 
+    def blogs_num(self):
+        return self.user.blog_set.count()
+
 
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
@@ -30,7 +35,7 @@ def save_user_profile(sender, instance, **kwargs):
 class Blog(models.Model):
     name = models.CharField(max_length=200, help_text="Enter a blog title")
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    pub_date = models.DateTimeField(null=True, blank=True)
+    pub_date = models.DateTimeField(null=True, blank=True, default=datetime.datetime.now())
     description = TextField(max_length=1000)
 
     class Meta:
@@ -44,6 +49,11 @@ class Blog(models.Model):
         last_comment = self.comment_set.last()
         return last_comment.pub_date if last_comment else None
 
+    def last_update(self):
+        last_comment = self.comment_set.last()
+        updates_list = [last_comment.pub_date if last_comment else None, self.pub_date]
+        return next(date for date in updates_list if date)
+
     def get_absolute_url(self):
         return reverse('blog-detail', args=[self.id])
 
@@ -52,7 +62,7 @@ class Comment(models.Model):
     commented_blog = models.ForeignKey('Blog', null=False, on_delete=models.CASCADE)
     description = TextField(max_length=1000, help_text="Enter comment about blog here.")
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    pub_date = models.DateTimeField(null=True, blank=True)
+    pub_date = models.DateTimeField(null=True, blank=True, default=datetime.datetime.now())
 
     def __str__(self):
         d = self.description

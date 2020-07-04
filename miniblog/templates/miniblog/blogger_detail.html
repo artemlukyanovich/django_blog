@@ -10,15 +10,22 @@
     <p>No Bio</p>
     {% endif %}
 
+    <p style="color: gray">From:
+    {% if blogger.profile.location %}
+    {{ blogger.profile.location }}
+    {% else %}
+    No Location
+    {% endif %}</p>
+
 {#    <a href="{% url 'book_update' book.id %}">Update</a>#}
 {#    <a class="text-danger" href="{% url 'book_delete' book.id %}">Delete</a>#}
 {##}
   <div style="margin-top:20px">
-    {% if user.blog_set.count %}
+    {% if blogger.blog_set.count %}
     <h3>Blogs list</h3>
 
     <ul>
-    {% for blog in user.blog_set.all %}
+    {% for blog in blogger.blog_set.all %}
       <li>
         <a href="{% url 'blog-detail' blog.id %}">{{ blog.name }}</a> ({{blog.pub_date}})
       </li>

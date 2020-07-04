@@ -8,11 +8,12 @@
 
       {% for blog in blog_list %}
       <li>
-        <a href="{{ blog.get_absolute_url }}">{{ blog.name }}</a> ({{ blog.pub_date|date:'d.m.Y' }}) -
+        <a href="{{ blog.get_absolute_url }}">{{ blog.name }}</a>
+        <span style="color: gray">(last upd. {{ blog.last_update|date:'d.m.Y, H:i' }})</span> -
         <a href="{% url 'blogger-detail' blog.author.id %}">{{ blog.author }}</a>
-      {% if blog.last_comment_date %}
-          <span style="color: gray">(commented {{ blog.last_comment_date|date:'d.m.Y, H:i' }})</span>
-      {% endif %}
+{#      {% if blog.last_comment_date %}#}
+{#          <span style="color: gray">(commented {{ blog.last_comment_date|date:'d.m.Y, H:i' }})</span>#}
+{#      {% endif %}#}
       </li>
       {% endfor %}
 

@@ -5,17 +5,24 @@ import time
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import reset_queries, connection
-from django.db.models import F, Max, Count
+from django.db.models import F, Max, Count, Prefetch
 from django.db.models.functions import Coalesce
 from django.shortcuts import render, get_object_or_404
 # Create your views here.
 from django.urls import reverse
 from django.views import generic
 from django.views.generic import CreateView
+from rest_framework import viewsets
+from rest_framework.generics import GenericAPIView, CreateAPIView, ListAPIView, ListCreateAPIView, RetrieveAPIView, \
+    RetrieveUpdateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.mixins import ListModelMixin, CreateModelMixin
 from rest_framework.response import Response
+from rest_framework.routers import DefaultRouter
 from rest_framework.views import APIView
 
-from miniblog.models import Blog, User, Comment
+from miniblog.models import Blog, User, Comment, Profile
+# from miniblog.serializers import BlogSerializer
+from . import serializers as s
 
 
 # class CustomPermissionRequiredMixin(PermissionRequiredMixin):
@@ -55,19 +62,22 @@ class BlogListView(generic.ListView):
     paginate_by = 5
 
     def get_queryset(self):
-        return Blog.objects.annotate(last_update=Coalesce(Max('comment__pub_date'), 'pub_date')).\
+        return Blog.objects.select_related('author').annotate(last_update=Coalesce(Max('comment__pub_date'), 'pub_date')).\
             order_by(F('last_update').desc(nulls_last=False))
 
 
 class BloggerListView(generic.ListView):
     model = User
+    # model = Profile
     paginate_by = 10
     template_name = 'miniblog/blogger_list.html'
 
-    @query_debugger
     def get_queryset(self):
         return User.objects.exclude(blog__isnull=True).annotate(blogs_num=Count('blog')).\
             order_by(F('blogs_num').desc(nulls_last=True), 'username')
+
+    # def get_queryset(self):
+    #     return Profile.objects.all()
 
 
 class BlogDetailView(generic.DetailView):
@@ -104,14 +114,136 @@ class CommentCreate(LoginRequiredMixin, CreateView):
         return reverse('blog-detail', kwargs={'pk': self.kwargs['pk']})
 
 
-class BlogView(APIView):
-    @query_debugger
-    def get(self, request):
-        queryset = Blog.objects.select_related('author').all()
-        blogs = []
+# 1
+# class BlogView(APIView):
+#     @query_debugger
+#     def get(self, request):
+#         queryset = Blog.objects.select_related('author').all()
+#         # blogs = []
+#         #
+#         # for blog in queryset:
+#         #     blogs.append({'id': blog.id, 'name': blog.name, 'author': blog.author.username})
+#         #
+#         # return Response(blogs)
+#
+#         serializer = BlogSerializer(queryset, many=True)
+#         return Response({"blogs": serializer.data})
+#
+#     def post(self, request):
+#         blog = request.data.get('blog')
+#
+#         serializer = BlogSerializer(data=blog, partial=True)
+#         if serializer.is_valid(raise_exception=True):
+#             blog_saved = serializer.save()
+#         return Response({"success": "Blog '{}' created successfully".format(blog_saved.name)})
+#
+#     def put(self, request, pk):
+#         saved_blog = get_object_or_404(Blog.objects.all(), pk=pk)
+#         data = request.data.get('blog')
+#         serializer = BlogSerializer(instance=saved_blog, data=data, partial=True)
+#         if serializer.is_valid(raise_exception=True):
+#             blog_saved = serializer.save()
+#         return Response({
+#             "success": "Blog '{}' updated successfully".format(blog_saved.name)
+#         })
+#
+#     def delete(self, request, pk):
+#         blog = get_object_or_404(Blog.objects.all(), pk=pk)
+#         blog.delete()
+#         return Response({
+#             "message": "Blog with id `{}` has been deleted.".format(pk)
+#         }, status=204)
 
-        for blog in queryset:
-            blogs.append({'id': blog.id, 'name': blog.name, 'author': blog.author.username})
 
-        return Response(blogs)
+# 2.1
+# class BlogView(ListModelMixin, CreateModelMixin, GenericAPIView):
+#     queryset = Blog.objects.select_related('author').all()
+#     serializer_class = BlogSerializer
+#
+#     @query_debugger
+#     def get(self, request, *args, **kwargs):
+#         return self.list(request, *args, **kwargs)
+#
+#     def perform_create(self, serializer):
+#         author = get_object_or_404(User, id=self.request.data.get('author_id'))
+#         return serializer.save(author=author)
+#
+#     def post(self, request, *args, **kwargs):
+#         return self.create(request, *args, **kwargs)
+
+
+# 2.2
+# class BlogView(ListCreateAPIView):
+#     queryset = Blog.objects.select_related('author').all()
+#     serializer_class = BlogSerializer
+#
+#     def perform_create(self, serializer):
+#         author = get_object_or_404(User, id=self.request.data.get('author_id'))
+#         return serializer.save(author=author)
+#
+#
+# class SingleBlogView(RetrieveUpdateDestroyAPIView):
+#     queryset = Blog.objects.select_related('author').all()
+#     serializer_class = BlogSerializer
+
+
+# 3.1
+# class BlogView(viewsets.ViewSet):
+#
+#     @query_debugger
+#     def list(self, request):
+#         queryset = Blog.objects.select_related('author').annotate(last_update=Coalesce(Max('comment__pub_date'), 'pub_date')).\
+#             order_by(F('last_update').desc(nulls_last=False))
+#         serializer = s.BlogSerializer(queryset, many=True)
+#         return Response(serializer.data)
+#
+#     @query_debugger
+#     def retrieve(self, request, pk=None):
+#         queryset = Blog.objects.select_related('author').all()
+#         user = get_object_or_404(queryset, pk=pk)
+#         serializer = s.BlogSerializer(user)
+#         return Response(serializer.data)
+
+
+# 3.2
+class BlogViewSet(viewsets.ModelViewSet):
+    serializer_class = s.BlogSerializer
+    queryset = Blog.objects.select_related('author').annotate(last_update=Coalesce(Max('comment__pub_date'), 'pub_date')).\
+            order_by(F('last_update').desc(nulls_last=False))
+
+    def get_serializer_class(self):
+        if self.action in ['list']:
+            return s.BlogSerializer
+        else:
+            return s.BlogDetailSerializer
+
+    # default value already set in models
+    # def perform_create(self, serializer):
+    #     date_list = [self.request.data.get('pub_date'), datetime.datetime.now()]
+    #     pub_date = next(date for date in date_list if date)
+    #     serializer.save(pub_date=pub_date)
+
+
+class BloggerViewSet(viewsets.ModelViewSet):
+    serializer_class = s.BloggerSerializer
+    queryset = User.objects.select_related('profile').exclude(blog__isnull=True).annotate(blogs_num=Count('blog')).\
+            order_by(F('blogs_num').desc(nulls_last=True), 'username')
+
+    def get_serializer_class(self):
+        if self.action in ['list']:
+            return s.BloggerSerializer
+        else:
+            return s.BloggerDetailSerializer
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = s.CommentSerializer
+    queryset = Comment.objects.select_related('commented_blog').select_related('author').order_by(F('pub_date').desc(nulls_last=True))
+
+    def get_serializer_class(self):
+        if self.action in ['list']:
+            return s.CommentSerializer
+        else:
+            return s.CommentDetailSerializer
+
 

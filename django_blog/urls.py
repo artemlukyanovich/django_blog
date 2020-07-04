@@ -24,6 +24,7 @@ urlpatterns = [
     path('', include('miniblog.urls')),
     path('', include("accounts.urls")),
     path('accounts/', include('django.contrib.auth.urls')),
+    # path('blog/', RedirectView.as_view(url='/')),
 
 ]
 

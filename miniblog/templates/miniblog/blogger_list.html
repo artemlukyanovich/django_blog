@@ -9,7 +9,7 @@
 {#      <ul>#}
       {% for user in user_list %}
       <li>
-        <a href="{% url 'blogger-detail' user.id %}">{{ user }}</a> ({{user.blog_set.count}})
+        <a href="{% url 'blogger-detail' user.id %}">{{ user }}</a> ({{user.profile.blogs_num}})
       </li>
       {% endfor %}
 {#      </ul>#}
