@@ -6,8 +6,8 @@ from . import views
 
 
 urlpatterns = [
-    path('', RedirectView.as_view(url='/blog/', permanent=True)),
-    path('accounts/register/', views.RegisterFormView.as_view(), name="register"),
+    # path('', RedirectView.as_view(url='/blog/', permanent=True)),
+    path('register/', views.RegisterFormView.as_view(), name="register"),
 
 ]
 

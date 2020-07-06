@@ -31,7 +31,7 @@ class BlogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Blog
-        fields = ('id', 'last_update', 'name', 'author_id')
+        fields = ('id', 'last_update', 'pub_date', 'name', 'author_id')
 
     def to_representation(self, instance):
         representation = super(BlogSerializer, self).to_representation(instance)
