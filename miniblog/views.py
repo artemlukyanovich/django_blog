@@ -1,4 +1,3 @@
-# from django.contrib.auth.models import User
 import datetime
 import functools
 import time
@@ -75,9 +74,6 @@ class BloggerListView(generic.ListView):
     def get_queryset(self):
         return User.objects.exclude(blog__isnull=True).annotate(blogs_num=Count('blog')).\
             order_by(F('blogs_num').desc(nulls_last=True), 'username')
-
-    # def get_queryset(self):
-    #     return Profile.objects.all()
 
 
 class BlogDetailView(generic.DetailView):

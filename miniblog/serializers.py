@@ -26,7 +26,7 @@ from .models import Blog, Comment
 #         return instance
 
 
-# 2, 3
+# 2, 3+
 class BlogSerializer(serializers.ModelSerializer):
 
     class Meta:

@@ -1,4 +1,4 @@
-Создание скелета:
+Скелет:
 django-admin startproject django_blog
 create venv
 pip install django
@@ -6,7 +6,7 @@ python3 manage.py startapp miniblog
 main: settings, urls
 app: urls.py
 
-После создания скелета:
+После:
 python3 manage.py makemigrations
 python3 manage.py migrate
 
