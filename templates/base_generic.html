@@ -39,6 +39,11 @@
       </ul>
       {% endblock %}
       </div>
+        <div style="text-align: right">
+        <form action="{% url 'blogs' %}" method="get">
+            <input name="q" type="text" placeholder="Search blog...">
+        </form>
+        </div>
       <div class="col-sm-10 ">
 
       {% block content %}{% endblock %}

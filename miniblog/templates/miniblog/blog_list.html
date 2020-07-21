@@ -1,12 +1,12 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-    <h1>All blogs</h1>
+    <h1>Blogs</h1>
 
     {% if blog_list %}
     <ul>
 
-      {% for blog in blog_list %}
+      {% for blog in object_list %}
       <li>
         <a href="{{ blog.get_absolute_url }}">{{ blog.name }}</a>
         <span style="color: gray">(last upd. {{ blog.last_update|date:'d.m.Y, H:i' }})</span> -
