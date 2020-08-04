@@ -89,12 +89,6 @@ class BloggerDetailView(generic.DetailView):
     model = User
     template_name = 'miniblog/blogger_detail.html'
 
-    def get_context_data(self, **kwargs):
-        context = super(BloggerDetailView, self).get_context_data(**kwargs)
-        context['blogger'] = context['user']
-        context['user'] = self.request.user
-        return context
-
 
 class CommentCreate(LoginRequiredMixin, CreateView):
     model = Comment

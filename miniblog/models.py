@@ -51,8 +51,9 @@ class Blog(models.Model):
 
     def last_update(self):
         last_comment = self.comment_set.last()
-        updates_list = [last_comment.pub_date if last_comment else None, self.pub_date]
-        return next(date for date in updates_list if date)
+        # updates_list = [last_comment.pub_date if last_comment else None, self.pub_date]
+        # return next(date for date in updates_list if date)
+        return last_comment.pub_date if last_comment else self.pub_date
 
     def get_absolute_url(self):
         return reverse('blog-detail', args=[self.id])

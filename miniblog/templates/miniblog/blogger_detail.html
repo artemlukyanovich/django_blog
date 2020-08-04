@@ -1,7 +1,7 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-  <h1>Blogger: {{ blogger.username }}</h1>
+  <h1>Blogger: {{ user.username }}</h1>
 
     <h3>Bio</h3>
     {% if user.profile.bio %}
@@ -11,8 +11,8 @@
     {% endif %}
 
     <p style="color: gray">From:
-    {% if blogger.profile.location %}
-    {{ blogger.profile.location }}
+    {% if user.profile.location %}
+    {{ user.profile.location }}
     {% else %}
     No Location
     {% endif %}</p>
@@ -21,11 +21,11 @@
 {#    <a class="text-danger" href="{% url 'book_delete' book.id %}">Delete</a>#}
 {##}
   <div style="margin-top:20px">
-    {% if blogger.blog_set.count %}
+    {% if user.blog_set.count %}
     <h3>Blogs list</h3>
 
     <ul>
-    {% for blog in blogger.blog_set.all %}
+    {% for blog in user.blog_set.all %}
       <li>
         <a href="{% url 'blog-detail' blog.id %}">{{ blog.name }}</a> ({{blog.pub_date}})
       </li>
