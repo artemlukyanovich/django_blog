@@ -20,6 +20,14 @@ urlpatterns = [
     # path('api/blogs/', views.BlogView.as_view({'get': 'list'})),
     # path('api/blogs/<int:pk>', views.BlogView.as_view({'get': 'retrieve'})),
     url(r'^api/', include((router.urls, 'api-miniblog'))),
+    
+]
+
+# swagger
+urlpatterns += [
+    url(r'^swagger(?P<format>\.json|\.yaml)$', views.schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    url(r'^swagger/$', views.schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    url(r'^redoc/$', views.schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
 ]
 
