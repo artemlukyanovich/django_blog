@@ -64,8 +64,7 @@ class BlogListView(generic.ListView):
     def get_queryset(self):
         query = self.request.GET.get('q')
         object_list = Blog.objects.select_related('author').annotate(last_update=Coalesce(Max('comment__pub_date'), 'pub_date')).\
-            order_by(F('last_update').desc(nulls_last=False))\
-            # .filter(name__icontains=query)
+            order_by(F('last_update').desc(nulls_last=False))
         if query:
             object_list = object_list.filter(name__icontains=query)
         return object_list
@@ -206,7 +205,15 @@ class BlogViewSet(viewsets.ModelViewSet):
     serializer_class = s.BlogSerializer
     queryset = Blog.objects.select_related('author').annotate(last_update=Coalesce(Max('comment__pub_date'), 'pub_date')).\
             order_by(F('last_update').desc(nulls_last=False))
-
+    
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        object_list = Blog.objects.select_related('author').annotate(last_update=Coalesce(Max('comment__pub_date'), 'pub_date')).\
+            order_by(F('last_update').desc(nulls_last=False))
+        if query:
+            object_list = object_list.filter(name__icontains=query)
+        return object_list
+            
     def get_serializer_class(self):
         if self.action in ['list']:
             return s.BlogSerializer
