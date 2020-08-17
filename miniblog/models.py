@@ -8,6 +8,7 @@ from django.db.models import TextField, F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
+import inflect
 
 
 # Надо бы переместить модель в accounts
@@ -35,7 +36,7 @@ def save_user_profile(sender, instance, **kwargs):
 class Blog(models.Model):
     name = models.CharField(max_length=200, help_text="Enter a blog title")
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    pub_date = models.DateTimeField(null=True, blank=True, default=datetime.datetime.now())
+    pub_date = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now())
     description = TextField(max_length=1000)
 
     class Meta:
@@ -54,6 +55,11 @@ class Blog(models.Model):
         # updates_list = [last_comment.pub_date if last_comment else None, self.pub_date]
         # return next(date for date in updates_list if date)
         return last_comment.pub_date if last_comment else self.pub_date
+    
+    def autodescription(self):
+        blogs_dates = sorted([blog.pub_date for blog in self.author.blog_set.all()])
+        blog_position = blogs_dates.index(self.pub_date)
+        return self.author.username + "'s " + inflect.engine().ordinal(blog_position) + " blog"
 
     def get_absolute_url(self):
         return reverse('blog-detail', args=[self.id])
@@ -63,7 +69,7 @@ class Comment(models.Model):
     commented_blog = models.ForeignKey('Blog', null=False, on_delete=models.CASCADE)
     description = TextField(max_length=1000, help_text="Enter comment about blog here.")
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    pub_date = models.DateTimeField(null=True, blank=True, default=datetime.datetime.now())
+    pub_date = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now())
 
     def __str__(self):
         d = self.description
