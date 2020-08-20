@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Blog, Comment, User, Profile
+from .models import Blog, Comment, User, Profile, SomeModel
 from django_admin_listfilter_dropdown.filters import \
     DropdownFilter, ChoiceDropdownFilter, RelatedDropdownFilter
 
@@ -14,8 +14,9 @@ class CommentInline(admin.TabularInline):
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
-    list_display = ('name', 'author', 'pub_date', 'last_comment_date')
+    list_display = ('name', 'author', 'pub_date', 'last_comment_date', )
     list_filter = (('author', RelatedDropdownFilter), 'pub_date', )
+    # exclude = ('autodescription', )
     search_fields = ['name']
     # inlines = [CommentInline]
 
@@ -35,7 +36,10 @@ class BloggerAdmin(admin.ModelAdmin):
     # Некорректное отображение:
     list_filter = (('user', RelatedDropdownFilter), )
 
-
+@admin.register(SomeModel)
+class SomeModelAdmin(admin.ModelAdmin):
+    list_display = ('name', 'field_1_value', 'field_1_text', )
+    search_fields = ['name']
 
 
 

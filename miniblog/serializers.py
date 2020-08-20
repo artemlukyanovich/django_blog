@@ -31,7 +31,7 @@ class BlogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Blog
-        fields = ('id', 'last_update', 'pub_date', 'name', 'author_id')
+        fields = ('id', 'last_update', 'pub_date', 'name', 'autodescription', )
 
     def to_representation(self, instance):
         representation = super(BlogSerializer, self).to_representation(instance)
@@ -43,7 +43,7 @@ class BlogDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Blog
-        fields = ('id', 'pub_date', 'name', 'author_id', 'author', 'description', 'last_comment_date')
+        fields = ('id', 'pub_date', 'name', 'author_id', 'author', 'description', 'last_comment_date', )
 
     def to_representation(self, instance):
         representation = super(BlogDetailSerializer, self).to_representation(instance)
@@ -55,7 +55,7 @@ class BloggerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username')
+        fields = ('id', 'username', )
 
     def to_representation(self, instance):
         representation = super(BloggerSerializer, self).to_representation(instance)
@@ -68,7 +68,7 @@ class BloggerDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username')
+        fields = ('id', 'username', )
 
     def to_representation(self, instance):
         representation = super(BloggerDetailSerializer, self).to_representation(instance)
@@ -83,7 +83,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'pub_date')
+        fields = ('id', 'pub_date', )
 
     def to_representation(self, instance):
         representation = super(CommentSerializer, self).to_representation(instance)
@@ -96,7 +96,7 @@ class CommentDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ('id', 'pub_date')
+        fields = ('id', 'pub_date', )
 
     def to_representation(self, instance):
         representation = super(CommentDetailSerializer, self).to_representation(instance)

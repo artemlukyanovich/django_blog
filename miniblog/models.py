@@ -4,10 +4,11 @@ from django.contrib.auth.models import User, AbstractUser
 from django.db import models
 
 # Create your models here.
-from django.db.models import TextField, F
+from django.db.models import F
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
+from django.core.validators import MaxValueValidator, MinValueValidator
 import inflect
 
 
@@ -37,7 +38,8 @@ class Blog(models.Model):
     name = models.CharField(max_length=200, help_text="Enter a blog title")
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     pub_date = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now())
-    description = TextField(max_length=1000)
+    description = models.TextField(max_length=1000)
+    autodescription = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
         ordering = ['-pub_date']
@@ -56,18 +58,26 @@ class Blog(models.Model):
         # return next(date for date in updates_list if date)
         return last_comment.pub_date if last_comment else self.pub_date
     
-    def autodescription(self):
-        blogs_dates = sorted([blog.pub_date for blog in self.author.blog_set.all()])
-        blog_position = blogs_dates.index(self.pub_date)
-        return self.author.username + "'s " + inflect.engine().ordinal(blog_position) + " blog"
+    # def autodescription(self):
+    #     blogs_dates = sorted([blog.pub_date for blog in self.author.blog_set.all()])
+    #     blog_position = blogs_dates.index(self.pub_date)
+    #     return self.author.username + "'s " + inflect.engine().ordinal(blog_position) + " blog"
 
     def get_absolute_url(self):
         return reverse('blog-detail', args=[self.id])
+    
+    def save(self, *args, **kwargs):
+        if self.author:
+            blogs_dates = sorted([blog.pub_date for blog in self.author.blog_set.all()])
+            blog_position = blogs_dates.index(self.pub_date) + 1
+            self.autodescription = self.author.username + "'s " + inflect.engine().ordinal(blog_position) + " blog"
+                             
+        return super(Blog, self).save(*args, **kwargs)        
 
 
 class Comment(models.Model):
     commented_blog = models.ForeignKey('Blog', null=False, on_delete=models.CASCADE)
-    description = TextField(max_length=1000, help_text="Enter comment about blog here.")
+    description = models.TextField(max_length=1000, help_text="Enter comment about blog here.")
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     pub_date = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now())
 
@@ -84,4 +94,42 @@ class Comment(models.Model):
     display_description.short_description = "Text"
 
 
+"""
+To be implemented on Helper
+"""
 
+SOME_FIELDS = ['field_1', 'field_2']
+
+EVALUATION_RANGES = {
+    range(1, 41): "Bad",
+    range(41, 61): "Medium",
+    range(61, 81): "Good",
+    range(81, 101): "Great"  
+}
+
+def evaluate(num, values):
+    for v in values:
+        if num in v:
+            return values[v]
+        
+
+class SomeModel(models.Model):
+    name = models.CharField(max_length=128)
+    field_1_value = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)], default=None, null=True, blank=True)
+    field_2_value = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(100)], default=None, null=True, blank=True)
+    field_1_text = models.CharField(max_length=32, default=None, null=True, blank=True)
+    field_2_text = models.CharField(max_length=32, default=None, null=True, blank=True)
+    
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        for field in SOME_FIELDS:
+             if getattr(self, f'{field}_value'):
+                 setattr(self, f'{field}_text', evaluate(getattr(self, f'{field}_value'), EVALUATION_RANGES))
+                             
+        return super(SomeModel, self).save(*args, **kwargs)
