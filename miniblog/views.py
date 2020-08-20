@@ -68,6 +68,9 @@ class BlogListView(generic.ListView):
         if query:
             object_list = object_list.filter(name__icontains=query)
         return object_list
+    
+    def get_context_data(self, **kwargs):
+        context['comments_sum'] = self.comment_set.count()
 
 
 class BloggerListView(generic.ListView):
@@ -102,7 +105,7 @@ class CommentCreate(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         form.instance.author = self.request.user
         form.instance.commented_blog = get_object_or_404(Blog, pk=self.kwargs['pk'])
-        form.instance.pub_date = datetime.datetime.now()
+        # form.instance.pub_date = datetime.datetime.now()
         return super(CommentCreate, self).form_valid(form)
 
     def get_success_url(self):

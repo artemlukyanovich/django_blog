@@ -37,7 +37,8 @@ def save_user_profile(sender, instance, **kwargs):
 class Blog(models.Model):
     name = models.CharField(max_length=200, help_text="Enter a blog title")
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    pub_date = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now())
+    pub_date = models.DateTimeField(default=datetime.datetime.now())
+    mod_date = models.DateTimeField(default=datetime.datetime.now())
     description = models.TextField(max_length=1000)
     autodescription = models.CharField(max_length=100, null=True, blank=True)
 
@@ -71,6 +72,10 @@ class Blog(models.Model):
             blogs_dates = sorted([blog.pub_date for blog in self.author.blog_set.all()])
             blog_position = blogs_dates.index(self.pub_date) + 1
             self.autodescription = self.author.username + "'s " + inflect.engine().ordinal(blog_position) + " blog"
+        
+        if not self.id:
+            self.pub_date = datetime.datetime.now()
+        self.mod_date = datetime.datetime.now()
                              
         return super(Blog, self).save(*args, **kwargs)        
 
@@ -80,6 +85,7 @@ class Comment(models.Model):
     description = models.TextField(max_length=1000, help_text="Enter comment about blog here.")
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     pub_date = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now())
+    mod_date = models.DateTimeField(default=datetime.datetime.now())
 
     def __str__(self):
         d = self.description
@@ -92,6 +98,13 @@ class Comment(models.Model):
         return str(self.description)[:15] + ("..." if len(self.description) > 15 else "")
 
     display_description.short_description = "Text"
+    
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.pub_date = datetime.datetime.now()
+        self.mod_date = datetime.datetime.now()
+                             
+        return super(Comment, self).save(*args, **kwargs)
 
 
 """
@@ -128,8 +141,10 @@ class SomeModel(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
+        this_model = SomeModel.objects.get(id=self.id)
         for field in SOME_FIELDS:
-             if getattr(self, f'{field}_value'):
+            #  if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value') and not getattr(self, f'{field}_text'): # for helper
+             if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value'):
                  setattr(self, f'{field}_text', evaluate(getattr(self, f'{field}_value'), EVALUATION_RANGES))
                              
         return super(SomeModel, self).save(*args, **kwargs)
