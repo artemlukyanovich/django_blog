@@ -12,6 +12,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 import inflect
 
 
+
 # Надо бы переместить модель в accounts
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -40,7 +41,7 @@ class Blog(models.Model):
     pub_date = models.DateTimeField(default=datetime.datetime.now())
     mod_date = models.DateTimeField(default=datetime.datetime.now())
     description = models.TextField(max_length=1000)
-    autodescription = models.CharField(max_length=100, null=True, blank=True)
+    # autodescription = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
         ordering = ['-pub_date']
@@ -58,33 +59,29 @@ class Blog(models.Model):
         # updates_list = [last_comment.pub_date if last_comment else None, self.pub_date]
         # return next(date for date in updates_list if date)
         return last_comment.pub_date if last_comment else self.pub_date
-    
-    # def autodescription(self):
-    #     blogs_dates = sorted([blog.pub_date for blog in self.author.blog_set.all()])
-    #     blog_position = blogs_dates.index(self.pub_date)
-    #     return self.author.username + "'s " + inflect.engine().ordinal(blog_position) + " blog"
 
     def get_absolute_url(self):
         return reverse('blog-detail', args=[self.id])
     
     def save(self, *args, **kwargs):
-        if self.author:
-            blogs_dates = sorted([blog.pub_date for blog in self.author.blog_set.all()])
-            blog_position = blogs_dates.index(self.pub_date) + 1
-            self.autodescription = self.author.username + "'s " + inflect.engine().ordinal(blog_position) + " blog"
-        
         if not self.id:
             self.pub_date = datetime.datetime.now()
         self.mod_date = datetime.datetime.now()
-                             
-        return super(Blog, self).save(*args, **kwargs)        
+        
+        return super(Blog, self).save(*args, **kwargs)  
+    
+    def autodescription(self):
+        if self.author and self.pub_date:
+            blogs_dates = sorted([blog.pub_date for blog in self.author.blog_set.all()])
+            blog_position = blogs_dates.index(self.pub_date) + 1
+            return self.author.username + "'s " + inflect.engine().ordinal(blog_position) + " blog"     
 
 
 class Comment(models.Model):
     commented_blog = models.ForeignKey('Blog', null=False, on_delete=models.CASCADE)
     description = models.TextField(max_length=1000, help_text="Enter comment about blog here.")
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    pub_date = models.DateTimeField(null=False, blank=False, default=datetime.datetime.now())
+    pub_date = models.DateTimeField(default=datetime.datetime.now())
     mod_date = models.DateTimeField(default=datetime.datetime.now())
 
     def __str__(self):
@@ -142,9 +139,10 @@ class SomeModel(models.Model):
     
     def save(self, *args, **kwargs):
         this_model = SomeModel.objects.get(id=self.id)
+        
         for field in SOME_FIELDS:
             #  if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value') and not getattr(self, f'{field}_text'): # for helper
-             if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value'):
+            if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value'):
                  setattr(self, f'{field}_text', evaluate(getattr(self, f'{field}_value'), EVALUATION_RANGES))
                              
         return super(SomeModel, self).save(*args, **kwargs)
