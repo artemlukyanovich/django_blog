@@ -110,14 +110,21 @@ To be implemented on Helper
 
 SOME_FIELDS = ['field_1', 'field_2']
 
-EVALUATION_RANGES = {
+
+EVALUATION_RANGES_V1 = ['Low', 'Medium', 'High']
+
+def evaluate_v1(num, values, max):
+    return values[int(num//(max/len(values)))]
+
+
+EVALUATION_RANGES_V2 = {
     range(1, 41): "Bad",
     range(41, 61): "Medium",
     range(61, 81): "Good",
     range(81, 101): "Great"  
 }
 
-def evaluate(num, values):
+def evaluate_v2(num, values):
     for v in values:
         if num in v:
             return values[v]
@@ -138,11 +145,13 @@ class SomeModel(models.Model):
         return self.name
     
     def save(self, *args, **kwargs):
-        this_model = SomeModel.objects.get(id=self.id)
+        this_model = self.__class__.objects.get(id=self.id)
         
         for field in SOME_FIELDS:
-            #  if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value') and not getattr(self, f'{field}_text'): # for helper
-            if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value'):
-                 setattr(self, f'{field}_text', evaluate(getattr(self, f'{field}_value'), EVALUATION_RANGES))
+            if not getattr(self, f'{field}_value'):
+                setattr(self, f'{field}_text', "")
+            elif getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value') \
+                and getattr(self, f'{field}_text') == getattr(this_model, f'{field}_text'):
+               setattr(self, f'{field}_text', evaluate_v1(getattr(self, f'{field}_value'), EVALUATION_RANGES_V1, 100))
                              
         return super(SomeModel, self).save(*args, **kwargs)
