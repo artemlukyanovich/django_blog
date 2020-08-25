@@ -114,7 +114,7 @@ SOME_FIELDS = ['field_1', 'field_2']
 EVALUATION_RANGES_V1 = ['Low', 'Medium', 'High']
 
 def evaluate_v1(num, values, max):
-    return values[int(num//(max/len(values)))]
+    return None if not num else values[int(num//(max/len(values)))]
 
 
 EVALUATION_RANGES_V2 = {
@@ -125,6 +125,8 @@ EVALUATION_RANGES_V2 = {
 }
 
 def evaluate_v2(num, values):
+    if not num:
+        return None
     for v in values:
         if num in v:
             return values[v]
@@ -146,14 +148,17 @@ class SomeModel(models.Model):
     
     def save(self, *args, **kwargs):
         this_model = self.__class__.objects.get(id=self.id)
+               
+        # for field in SOME_FIELDS:
+        #     if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value') \
+        #         or getattr(self, f'{field}_value') and not getattr(self, f'{field}_text'): # for helper add "and if text in range" to 1st part
+        #             setattr(self, f'{field}_text', evaluate_v1(getattr(self, f'{field}_value'), EVALUATION_RANGES_V1, 100))
         
         for field in SOME_FIELDS:
-            if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value') \
-                or getattr(self, f'{field}_value') and not getattr(self, f'{field}_text'):
-                    if getattr(self, f'{field}_value'):
-                        setattr(self, f'{field}_text', evaluate_v1(getattr(self, f'{field}_value'), EVALUATION_RANGES_V1, 100))
-                    else:
-                        setattr(self, f'{field}_text', "")
-                        
+            field_value = getattr(self, f'{field}_value')
+            field_text = getattr(self, f'{field}_text')
+            if field_value != getattr(this_model, f'{field}_value') or field_value and not field_text: # for helper add "and if text in range" to 1st part
+                    setattr(self, f'{field}_text', evaluate_v1(field_value, EVALUATION_RANGES_V1, 100))
+                                   
                              
         return super(SomeModel, self).save(*args, **kwargs)
