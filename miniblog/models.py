@@ -148,10 +148,14 @@ class SomeModel(models.Model):
         this_model = self.__class__.objects.get(id=self.id)
         
         for field in SOME_FIELDS:
-            if not getattr(self, f'{field}_value'):
-                setattr(self, f'{field}_text', "")
-            elif getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value') \
-                and getattr(self, f'{field}_text') == getattr(this_model, f'{field}_text'):
-               setattr(self, f'{field}_text', evaluate_v1(getattr(self, f'{field}_value'), EVALUATION_RANGES_V1, 100))
+            # if not getattr(self, f'{field}_value'):
+            #     setattr(self, f'{field}_text', "")
+            if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value') \
+                or getattr(self, f'{field}_value') and not getattr(self, f'{field}_text'):
+                    if getattr(self, f'{field}_value'):
+                        setattr(self, f'{field}_text', evaluate_v1(getattr(self, f'{field}_value'), EVALUATION_RANGES_V1, 100))
+                    else:
+                        setattr(self, f'{field}_text', "")
+                        
                              
         return super(SomeModel, self).save(*args, **kwargs)
