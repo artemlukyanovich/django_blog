@@ -3,6 +3,7 @@ import functools
 import time
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required, permission_required
 from django.db import reset_queries, connection
 from django.db.models import F, Max, Count, Prefetch
 from django.db.models.functions import Coalesce
@@ -20,6 +21,7 @@ from rest_framework.views import APIView
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from miniblog.forms import ProfileForm
 
 from miniblog.models import Blog, User, Comment, Profile
 from . import serializers as s
@@ -68,10 +70,7 @@ class BlogListView(generic.ListView):
         if query:
             object_list = object_list.filter(name__icontains=query)
         return object_list
-    
-    def get_context_data(self, **kwargs):
-        context['comments_sum'] = self.comment_set.count()
-
+        
 
 class BloggerListView(generic.ListView):
     model = User
@@ -91,6 +90,36 @@ class BlogDetailView(generic.DetailView):
 class BloggerDetailView(generic.DetailView):
     model = User
     template_name = 'miniblog/blogger_detail.html'
+    
+
+# class NewProfileView(generic.FormView):
+#     template_name = "miniblog/profile.html"
+#     form_class = ProfileForm
+
+#     def form_valid(self, form):
+#         form.save(self.request.user)
+#         return super(NewProfileView, self).form_valid(form)
+
+#     def get_success_url(self, *args, **kwargs):
+#         return reverse("index")
+
+
+class EditProfileView(generic.UpdateView):
+    model = Profile
+    form_class = ProfileForm
+    template_name = "miniblog/profile.html"
+     
+    def get_object(self, *args, **kwargs):
+        # user = get_object_or_404(User, pk=self.kwargs['pk'])
+        user = get_object_or_404(User, pk=self.request.user.pk)
+
+        # We can also get user object using self.request.user  but that doesnt work
+        # for other models.
+
+        return user.profile
+
+    def get_success_url(self, *args, **kwargs):
+        return reverse("edit-user-profile")
 
 
 class CommentCreate(LoginRequiredMixin, CreateView):

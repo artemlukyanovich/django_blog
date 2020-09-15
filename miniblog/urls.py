@@ -17,6 +17,10 @@ urlpatterns = [
     url(r'^bloggers/$', views.BloggerListView.as_view(), name='bloggers'),
     url(r'^bloggers/(?P<pk>\d+)$', views.BloggerDetailView.as_view(), name='blogger-detail'),
     url(r'^blogs/(?P<pk>\d+)/create/$', views.CommentCreate.as_view(), name='comment-create'),
+    
+    # url(r'^profiles/new/$', views.NewProfileView.as_view(), name="new-user-profile"),
+    url(r'^bloggers/edit/$', views.EditProfileView.as_view(), name='edit-user-profile'),
+    
     # path('api/blogs/', views.BlogView.as_view({'get': 'list'})),
     # path('api/blogs/<int:pk>', views.BlogView.as_view({'get': 'retrieve'})),
     url(r'^api/', include((router.urls, 'api-miniblog'))),

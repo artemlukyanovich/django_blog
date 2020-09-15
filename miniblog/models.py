@@ -59,6 +59,9 @@ class Blog(models.Model):
         # updates_list = [last_comment.pub_date if last_comment else None, self.pub_date]
         # return next(date for date in updates_list if date)
         return last_comment.pub_date if last_comment else self.pub_date
+    
+    def comments_num(self):
+        return self.comment_set.count()
 
     def get_absolute_url(self):
         return reverse('blog-detail', args=[self.id])
@@ -118,18 +121,18 @@ def evaluate_v1(num, values, max):
 
 
 EVALUATION_RANGES_V2 = {
-    range(1, 41): "Bad",
-    range(41, 61): "Medium",
-    range(61, 81): "Good",
-    range(81, 101): "Great"  
+    "Bad": range(1, 41),
+    "Medium": range(41, 61),
+    "Good": range(61, 81),
+    "Great": range(81, 101)  
 }
 
 def evaluate_v2(num, values):
     if not num:
         return None
     for v in values:
-        if num in v:
-            return values[v]
+        if num in values[v]:
+            return v
         
 
 class SomeModel(models.Model):
@@ -148,16 +151,12 @@ class SomeModel(models.Model):
     
     def save(self, *args, **kwargs):
         this_model = self.__class__.objects.get(id=self.id)
-               
-        # for field in SOME_FIELDS:
-        #     if getattr(self, f'{field}_value') != getattr(this_model, f'{field}_value') \
-        #         or getattr(self, f'{field}_value') and not getattr(self, f'{field}_text'): # for helper add "and if text in range" to 1st part
-        #             setattr(self, f'{field}_text', evaluate_v1(getattr(self, f'{field}_value'), EVALUATION_RANGES_V1, 100))
-        
+                   
         for field in SOME_FIELDS:
             field_value = getattr(self, f'{field}_value')
             field_text = getattr(self, f'{field}_text')
-            if field_value != getattr(this_model, f'{field}_value') or field_value and not field_text: # for helper add "and if text in range" to 1st part
+            if field_value != getattr(this_model, f'{field}_value') and field_text in EVALUATION_RANGES_V1 \
+                or field_value and not field_text:
                     setattr(self, f'{field}_text', evaluate_v1(field_value, EVALUATION_RANGES_V1, 100))
                                    
                              
