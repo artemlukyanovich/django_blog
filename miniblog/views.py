@@ -113,12 +113,10 @@ class EditProfileView(generic.UpdateView):
         # user = get_object_or_404(User, pk=self.kwargs['pk'])
         user = get_object_or_404(User, pk=self.request.user.pk)
 
-        # We can also get user object using self.request.user  but that doesnt work
-        # for other models.
-
         return user.profile
 
     def get_success_url(self, *args, **kwargs):
+        # return reverse("edit-user-profile", kwargs={'pk': pk=self.kwargs['pk'])
         return reverse("edit-user-profile")
 
 
@@ -259,15 +257,15 @@ class BlogViewSet(viewsets.ModelViewSet):
 
 
 class BloggerViewSet(viewsets.ModelViewSet):
-    serializer_class = s.BloggerSerializer
+    serializer_class = s.BloggerActionSerializer
     queryset = User.objects.select_related('profile').exclude(blog__isnull=True).annotate(blogs_num=Count('blog')).\
             order_by(F('blogs_num').desc(nulls_last=True), 'username')
 
-    def get_serializer_class(self):
-        if self.action in ['list']:
-            return s.BloggerSerializer
-        else:
-            return s.BloggerDetailSerializer
+    # def get_serializer_class(self):
+    #     if self.action in ['list']:
+    #         return s.BloggerSerializer
+    #     else:
+    #         return s.BloggerDetailSerializer
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -293,3 +291,4 @@ schema_view = get_schema_view(
    public=True,
    permission_classes=(permissions.AllowAny,),
 )
+

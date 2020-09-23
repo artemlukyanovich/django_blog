@@ -1,4 +1,7 @@
+from action_serializer import ModelActionSerializer
 from django.contrib.auth.models import User
+from django_countries.serializer_fields import CountryField
+from phonenumber_field.serializerfields import PhoneNumberField
 from rest_framework import serializers
 from .models import Blog, Comment
 
@@ -65,18 +68,24 @@ class BloggerSerializer(serializers.ModelSerializer):
 
 
 class BloggerDetailSerializer(serializers.ModelSerializer):
+    country = CountryField(source='profile.country', required=False)
+    blogs_num = serializers.IntegerField(source='profile.blogs_num', required=False)
+    birth_date = serializers.DateField(source='profile.birth_date', required=False)
+    phone_number = PhoneNumberField(source='profile.phone_number', required=False)
+    bio = serializers.CharField(source='profile.bio', required=False)
 
     class Meta:
         model = User
-        fields = ('id', 'username', )
+        fields = ('id', 'username', 'blogs_num', 'birth_date', 'phone_number', 'country', 'bio', )
 
-    def to_representation(self, instance):
-        representation = super(BloggerDetailSerializer, self).to_representation(instance)
-        representation['blogs_num'] = instance.profile.blogs_num()
-        representation['birth_date'] = instance.profile.birth_date
-        representation['location'] = instance.profile.location
-        representation['bio'] = instance.profile.bio
-        return representation
+    # def to_representation(self, instance):
+    #     representation = super(BloggerDetailSerializer, self).to_representation(instance)
+    #     representation['blogs_num'] = instance.profile.blogs_num()
+    #     representation['birth_date'] = instance.profile.birth_date
+    #     representation['country'] = str(instance.profile.country)
+    #     representation['phone_number'] = instance.profile.phone_number
+    #     representation['bio'] = instance.profile.bio
+    #     return representation
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -104,3 +113,19 @@ class CommentDetailSerializer(serializers.ModelSerializer):
         representation['commented_blog'] = instance.commented_blog.name
         representation['description'] = instance.description
         return representation
+
+
+class BloggerActionSerializer(ModelActionSerializer):
+    country = CountryField(source='profile.country', required=False)
+    blogs_num = serializers.IntegerField(source='profile.blogs_num', required=False)
+    birth_date = serializers.DateField(source='profile.birth_date', required=False)
+    phone_number = PhoneNumberField(source='profile.phone_number', required=False)
+    bio = serializers.CharField(source='profile.bio', required=False)
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'blogs_num', 'birth_date', 'phone_number', 'country', 'bio', )
+        action_fields = {
+            "list": {"fields": ('id', 'username', 'blogs_num', )},
+            # "retrieve": {"fields": ('id', 'username', 'blogs_num',)},
+        }
